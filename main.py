@@ -4,33 +4,58 @@ from helpers.camera_mode import camera_mode
 from helpers.image_mode import image_mode
 from helpers.io_helpers import load_custom_palette
 from helpers.palettes import PALETTES
+from helpers.controls import Button
+from tkinter import Tk, filedialog
+
+def select_image_file():
+    root = Tk()
+    root.withdraw()
+    file_path = filedialog.askopenfilename(
+        title="Select an image",
+        filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp;*.tiff"), ("All Files", "*.*")]
+    )
+    root.destroy()
+    return file_path
 
 def main_menu():
-    # Create a blank black canvas
-    menu = np.zeros((300, 500, 3), dtype=np.uint8)
+    # Define button actions
+    def start_camera():
+        cv2.destroyAllWindows()
+        camera_mode()
 
-    # Draw menu text
-    cv2.putText(menu, "Retro Camera", (100, 80), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
-    cv2.putText(menu, "Press C = Camera Mode", (80, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-    cv2.putText(menu, "Press I = Image Mode", (80, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-    cv2.putText(menu, "Press Q = Quit", (80, 250), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+    def start_image():
+        cv2.destroyAllWindows()
+        path = select_image_file()
+        if path:
+            image_mode(path)
+
+    def quit_app():
+        print("Quit RetroCam")
+        cv2.destroyAllWindows()
+        exit()
+
+    # Create buttons directly
+    buttons = [
+        Button("Camera Mode", (100, 120), action=start_camera),
+        Button("Image Mode", (100, 190), action=start_image),
+        Button("Quit", (100, 260), action=quit_app),
+    ]
+
+    cv2.namedWindow("Main Menu")
+    cv2.setMouseCallback("Main Menu", lambda e, x, y, f, p: [b.handle_event(e, x, y, f, p) for b in buttons])
 
     while True:
-        cv2.imshow("Mode Select", menu)
-        key = cv2.waitKey(0) & 0xFF
-        if key == ord('c'):
-            cv2.destroyWindow("Mode Select")
-            camera_mode()
-            break
-        elif key == ord('i'):
-            cv2.destroyWindow("Mode Select")
-            path = input("Enter image path: ")
-            image_mode(path)
-            break
-        elif key == ord('q'):
-            break
+        panel = np.zeros((400, 400, 3), dtype=np.uint8)
+        cv2.putText(panel, "Retro Camera", (80, 60),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
 
-    cv2.destroyAllWindows()
+        for b in buttons:
+            b.draw(panel)
+
+        cv2.imshow("Main Menu", panel)
+
+        if cv2.waitKey(30) & 0xFF == ord('q'):
+            quit_app()
 
 if __name__ == "__main__":
     custom = load_custom_palette("custom/palette.png")
