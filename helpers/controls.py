@@ -69,10 +69,48 @@ class Button:
             if self.action:  
                 self.action()
 
+class TextBox:
+    def __init__(self, label, pos, size=(200, 40), text=""):
+        self.label = label
+        self.pos = pos
+        self.size = size
+        self.text = text
+        self.active = False
+
+    def draw(self, img):
+        x, y = self.pos
+        w, h = self.size
+        # background
+        color = (150, 150, 150) if self.active else (100, 100, 100)
+        cv2.rectangle(img, (x, y), (x + w, y + h), color, -1)
+        cv2.rectangle(img, (x, y), (x + w, y + h), (255, 255, 255), 2)
+        # label
+        cv2.putText(img, self.label, (x, y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+        # text inside box
+        cv2.putText(img, self.text, (x + 5, y + int(h * 0.7)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+
+    def handle_event(self, event, mx, my, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            x, y = self.pos
+            w, h = self.size
+            self.active = (x <= mx <= x + w and y <= my <= y + h)
+
+    def handle_key(self, key):
+        if not self.active:
+            return
+        if key == 8:  # backspace
+            self.text = self.text[:-1]
+        elif 32 <= key <= 126:  # printable ASCII
+            self.text += chr(key)
+
+
 class ControlPanel:
     def __init__(self, palettes):
         self.sliders = []
         self.buttons = []
+        self.text_boxes = []
         cv2.namedWindow("Controls")
         cv2.setMouseCallback("Controls", self.mouse_event)
 
@@ -82,14 +120,29 @@ class ControlPanel:
     def add_button(self, *args, **kwargs):
         self.buttons.append(Button(*args, **kwargs))
 
+    def add_textbox(self, *args, **kwargs):
+        self.text_boxes.append(TextBox(*args, **kwargs))
+
     def mouse_event(self, event, x, y, flags, param):
         for s in self.sliders:
             s.handle_event(event, x, y, flags, param)
         for b in self.buttons:
             b.handle_event(event, x, y, flags, param)
+        for t in self.text_boxes:
+            t.handle_event(event, x, y, flags, param)
+
+    def handle_key(self, key):
+        for t in self.text_boxes:
+            t.handle_key(key)
 
     def get_slider_values(self):
         return [s.value for s in self.sliders]
+    
+    def get_textbox_value(self, label):
+        for t in self.text_boxes:
+            if t.label == label:
+                return t.text
+        return ""
 
     def show(self):
         panel = np.zeros((600, 700, 3), dtype=np.uint8)
@@ -99,4 +152,6 @@ class ControlPanel:
             s.draw(panel)
         for b in self.buttons:
             b.draw(panel)
+        for t in self.text_boxes:
+            t.draw(panel)
         cv2.imshow("Controls", panel)

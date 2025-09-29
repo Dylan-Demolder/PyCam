@@ -28,6 +28,7 @@ def main():
     controls.add_slider("Red", 0, 255, 255, (50, 80))
     controls.add_slider("Green", 0, 255, 255, (50, 160))
     controls.add_slider("Blue", 0, 255, 255, (50, 240))
+    controls.add_textbox("Palette Name", (50, 320), size=(250, 40))
 
     def add_color():
         global palette, current_color
@@ -35,11 +36,16 @@ def main():
         print(f"Added color {current_color}")
 
     def save_palette():
-        if palette:
-            cv2.imwrite("custom/palette.png", draw_palette(palette, 50, 8))
-            print(f"Saved {len(palette)} colors to custom/palette.png")
-        else:
+        if not palette:
             print("No colors to save!")
+            return
+        name = controls.get_textbox_value("Palette Name").strip()
+        if not name:
+            print("No name entered, save cancelled.")
+            return
+        filename = os.path.join("palettes", f"{name}.png")
+        cv2.imwrite(filename, draw_palette(palette, 50, 8))
+        print(f"Saved {len(palette)} colors to {filename}")
 
     def clear_palette():
         global palette
@@ -62,19 +68,23 @@ def main():
         r, g, b = controls.get_slider_values()
         current_color = (b, g, r)
 
-        # Show current color preview
         preview = np.zeros((100, 300, 3), dtype=np.uint8)
         preview[:] = current_color
         cv2.putText(preview, f"Current: R={r} G={g} B={b}", (10, 70),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
         cv2.imshow("Current Color", preview)
 
-        # Show palette preview
         palette_img = draw_palette(palette, swatch_size=50, cols=8)
         cv2.imshow("Palette", palette_img)
 
-        if cv2.waitKey(30) & 0xFF == ord('q'):
-            break
+        key = cv2.waitKey(30) & 0xFF
+        if key != 255:
+            controls.handle_key(key)
+
+            # Only quit if no text box is active
+            if key == ord('q') and not any(t.active for t in controls.text_boxes):
+                break
+
 
     cv2.destroyAllWindows()
 
