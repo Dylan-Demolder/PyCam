@@ -13,6 +13,22 @@ PALETTES = {
                          [0, 50, 60], [0, 0, 0]], dtype=np.uint8)),
     4: ("Custom", None),  # will be loaded dynamically
 }
+# --- UI Controls ---
+def setup_controls():
+    cv2.namedWindow("Controls")
+    cv2.createTrackbar("Pixel Size", "Controls", 12, 50, nothing)
+    cv2.createTrackbar("Color Levels", "Controls", 6, 16, nothing)
+    cv2.createTrackbar("Brightness", "Controls", 50, 100, nothing)
+    cv2.createTrackbar("Contrast", "Controls", 50, 100, nothing)
+    cv2.createTrackbar("Palette", "Controls", 0, len(PALETTES)-1, nothing)
+
+def get_control_values():
+    pixel_size = max(1, cv2.getTrackbarPos("Pixel Size", "Controls"))
+    levels = max(1, cv2.getTrackbarPos("Color Levels", "Controls"))
+    brightness = cv2.getTrackbarPos("Brightness", "Controls")
+    contrast = cv2.getTrackbarPos("Contrast", "Controls")
+    palette_id = cv2.getTrackbarPos("Palette", "Controls")
+    return pixel_size, levels, brightness, contrast, palette_id
 
 # --- Image Effects ---
 def pixelate(frame, pixel_size=10):
