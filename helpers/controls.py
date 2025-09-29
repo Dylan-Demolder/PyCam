@@ -46,8 +46,17 @@ class Button:
         w, h = self.size
         cv2.rectangle(img, (x, y), (x + w, y + h), self.color, -1)
         cv2.rectangle(img, (x, y), (x + w, y + h), (255, 255, 255), 2)
-        cv2.putText(img, self.label, (x + 10, y + int(h * 0.7)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+
+        # Center text
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        scale = 0.7
+        thickness = 2
+        (text_w, text_h), baseline = cv2.getTextSize(self.label, font, scale, thickness)
+        text_x = x + (w - text_w) // 2
+        text_y = y + (h + text_h) // 2
+
+        cv2.putText(img, self.label, (text_x, text_y),
+                    cv2.FONT_HERSHEY_SIMPLEX, scale, (255, 255, 255), thickness)
 
     def handle_event(self, event, mx, my, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -83,7 +92,7 @@ class ControlPanel:
         return [s.value for s in self.sliders]
 
     def show(self):
-        panel = np.zeros((600, 500, 3), dtype=np.uint8)
+        panel = np.zeros((600, 700, 3), dtype=np.uint8)
         cv2.putText(panel, "RetroCam Controls", (50, 40),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
         for s in self.sliders:

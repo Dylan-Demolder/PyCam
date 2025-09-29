@@ -2,7 +2,8 @@ import cv2, time
 from helpers.effects import process_frame
 from helpers.controls import ControlPanel
 from helpers.io_helpers import save_snapshot, save_gif, load_custom_palette
-from helpers.palettes import PALETTES
+from helpers.palette_loader import load_all_palettes
+PALETTES = load_all_palettes("palettes")
 
 def camera_mode():
     cap = cv2.VideoCapture(0)
@@ -43,10 +44,10 @@ def camera_mode():
         exit()
 
     # Add buttons
-    controls.add_button("Snapshot", (350, 80), action=take_snapshot)
-    controls.add_button("Record GIF", (350, 140), action=start_gif)
-    controls.add_button("Reload Palette", (350, 200), action=reload_palette)
-    controls.add_button("Quit", (350, 260), action=quit_app)
+    controls.add_button("Snapshot", (350, 80), size=(200, 50), action=take_snapshot)
+    controls.add_button("Record GIF", (350, 140), size=(200, 50), action=start_gif)
+    controls.add_button("Reload Palette", (350, 200), size=(200, 50), action=reload_palette)
+    controls.add_button("Quit", (350, 260), size=(200, 50), action=quit_app)
     controls.add_slider("GIF length", 1, 15, 5, (50, 480))
     while True:
         ret, frame = cap.read()
@@ -66,8 +67,10 @@ def camera_mode():
             fps = 10 / (curr_time - prev_time)
             prev_time, frame_count = curr_time, 0
 
-        cv2.putText(processed, f"FPS: {fps:.1f}", (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        palette_name = PALETTES[palette_id][0] if palette_id in PALETTES else "Unknown"
+        cv2.putText(processed, f"FPS: {fps:.1f} | Palette: {palette_name}", (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+
 
         # GIF recording
         if recording_gif:

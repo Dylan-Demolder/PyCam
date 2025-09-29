@@ -6,6 +6,11 @@ from helpers.io_helpers import load_custom_palette
 from helpers.palettes import PALETTES
 from helpers.controls import Button
 from tkinter import Tk, filedialog
+from helpers.palette_loader import load_all_palettes
+
+# Dynamically load palettes from folder
+PALETTES = load_all_palettes("palettes")
+
 
 def select_image_file():
     root = Tk()
@@ -36,9 +41,9 @@ def main_menu():
 
     # Create buttons directly
     buttons = [
-        Button("Camera Mode", (100, 120), action=start_camera),
-        Button("Image Mode", (100, 190), action=start_image),
-        Button("Quit", (100, 260), action=quit_app),
+        Button("Camera Mode", (100, 120), size=(200, 50), action=start_camera),
+        Button("Image Mode", (100, 190), size=(200, 50), action=start_image),
+        Button("Quit", (100, 260), size=(200, 50), action=quit_app),
     ]
 
     cv2.namedWindow("Main Menu")

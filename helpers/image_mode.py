@@ -39,9 +39,9 @@ def image_mode(path="test.png"):
         exit()
 
     # Add buttons
-    controls.add_button("Save Image", (350, 80), action=save_image)
-    controls.add_button("Reload Palette", (350, 140), action=reload_palette)
-    controls.add_button("Quit", (350, 200), action=quit_app)
+    controls.add_button("Save Image", (350, 80), size=(200, 50), action=save_image)
+    controls.add_button("Reload Palette", (350, 140), size=(200, 50), action=reload_palette)
+    controls.add_button("Quit", (350, 200), size=(200, 50), action=quit_app)
 
     while True:
         controls.show()
